@@ -188,67 +188,30 @@ var DraftEditorCompositionHandler = {
     compositionUpdateData = null;
     compositionEndData = null;
 
-    const editorState = editor._latestEditorState;
-    const currentStyle = editorState.getCurrentInlineStyle();
-    const entityKey = getEntityKeyForSelection(
-      editorState.getCurrentContent(),
-      editorState.getSelection(),
-    );
-
-    const mustReset =
-      !composedChars ||
-      isSelectionAtLeafStart(editorState) ||
-      currentStyle.size > 0 ||
-      entityKey !== null;
-
-    if (mustReset) {
-      editor.restoreEditorDOM();
-    }
-
     editor.exitCurrentMode();
 
-    if (composedChars) {
-      if (
-        DraftFeatureFlags.draft_handlebeforeinput_composed_text &&
-        editor.props.handleBeforeInput &&
-        isEventHandled(
-          editor.props.handleBeforeInput(composedChars, editorState),
-        )
-      ) {
-        return;
-      }
-      // If characters have been composed, re-rendering with the update
-      // is sufficient to reset the editor.
-      const contentState = DraftModifier.replaceText(
-        editorState.getCurrentContent(),
-        editorState.getSelection(),
-        composedChars,
-        currentStyle,
-        entityKey,
-      );
-      editor.update(
-        EditorState.push(editorState, contentState, 'insert-characters'),
-      );
+    if (
+      composedChars &&
+      DraftFeatureFlags.draft_handlebeforeinput_composed_text &&
+      editor.props.handleBeforeInput &&
+      isEventHandled(
+        editor.props.handleBeforeInput(
+          composedChars,
+          editor._latestEditorState,
+        ),
+      )
+    ) {
       return;
     }
 
     onInput(editor);
     editor.restoreEditorDOM();
     editor.update(
-      EditorState.set(editorState, {
+      EditorState.set(editor._latestEditorState, {
         nativelyRenderedContent: null,
         inCompositionMode: false,
       }),
     );
-
-    if (mustReset) {
-      editor.update(
-        EditorState.set(editorState, {
-          nativelyRenderedContent: null,
-          forceSelection: true,
-        }),
-      );
-    }
   },
 };
 

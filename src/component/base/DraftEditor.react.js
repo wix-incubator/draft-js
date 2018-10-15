@@ -95,6 +95,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   _onBlur: Function;
   _onCharacterData: Function;
   _onCompositionEnd: Function;
+  _onCompositionUpdate: Function;
   _onCompositionStart: Function;
   _onCopy: Function;
   _onCut: Function;
