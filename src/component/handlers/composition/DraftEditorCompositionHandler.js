@@ -18,12 +18,14 @@ import type DraftEditor from 'DraftEditor.react';
 const DraftFeatureFlags = require('DraftFeatureFlags');
 const DraftModifier = require('DraftModifier');
 const EditorState = require('EditorState');
+const UserAgent = require('UserAgent');
 const Keys = require('Keys');
 
 const getEntityKeyForSelection = require('getEntityKeyForSelection');
 const isEventHandled = require('isEventHandled');
 const isSelectionAtLeafStart = require('isSelectionAtLeafStart');
 const onInput = require('editOnInput');
+const isSafari = UserAgent.isBrowser('Safari');
 
 /**
  * Millisecond delay to allow `compositionstart` to fire again upon
@@ -94,11 +96,15 @@ var DraftEditorCompositionHandler = {
     resolved = false;
     stillComposing = false;
     compositionEndData = compositionEndData || e.data;
-    setTimeout(() => {
-      if (!resolved) {
-        DraftEditorCompositionHandler.resolveComposition(editor);
-      }
-    }, RESOLVE_DELAY);
+    if (!isSafari) {
+      DraftEditorCompositionHandler.resolveComposition(editor);
+    } else {
+      setTimeout(() => {
+        if (!resolved) {
+          DraftEditorCompositionHandler.resolveComposition(editor);
+        }
+      }, RESOLVE_DELAY);
+    }
   },
 
   /**
