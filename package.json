@@ -36,8 +36,7 @@
   "dependencies": {
     "fbjs": "^0.8.15",
     "immutable": "~3.7.4",
-    "object-assign": "^4.1.0",
-    "wnpm-ci": "^7.0.1"
+    "object-assign": "^4.1.0"
   },
   "peerDependencies": {
     "react": "^0.14.0 || ^15.0.0-rc || ^16.0.0-rc || ^16.0.0",
@@ -81,7 +80,8 @@
     "run-sequence": "^1.1.2",
     "through2": "^2.0.1",
     "vinyl-buffer": "^1.0.0",
-    "webpack-stream": "^3.0.0"
+    "webpack-stream": "^3.0.0",
+    "wnpm-ci": "^7.0.1"
   },
   "devEngines": {
     "node": "6.x || 8.x",
