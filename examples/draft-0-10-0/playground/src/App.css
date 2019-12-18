@@ -64,7 +64,8 @@
   padding: 0 15px;
 }
 
-.nav-main:before, .nav-main:after {
+.nav-main:before,
+.nav-main:after {
   content: " ";
   display: table;
 }
@@ -149,9 +150,10 @@
 
 .playground-main {
   background: var(--main-background);
-  margin-top: var(--nav-main-height);
+  /* margin-top: var(--nav-main-height); */
   display: flex;
-  height: calc(100vh - var(--nav-main-height));
+  /* height: calc(100vh - var(--nav-main-height)); */
+  height: 100vh;
   display: flex;
 }
 

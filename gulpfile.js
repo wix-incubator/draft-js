@@ -290,6 +290,8 @@ gulp.task(
     'check-dependencies',
     'clean',
     gulp.parallel('modules', 'flow'),
-    gulp.parallel('dist', 'dist:min', 'website:static'),
+    'dist',
+    // gulp.watch(paths.src, gulp.parallel('dist')),
+    // gulp.parallel('dist', 'dist:min', 'website:static'),
   ),
 );

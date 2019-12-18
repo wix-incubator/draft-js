@@ -17,15 +17,15 @@
 
 import React, {Component} from 'react';
 import './DraftJsPlaygroundContainer.css';
-import {Controlled as CodeMirror} from 'react-codemirror2';
+// import {Controlled as CodeMirror} from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/javascript/javascript';
 import 'draft-js/dist/Draft.css';
 import './App.css';
 import DraftJsRichEditorExample from './DraftJsRichEditorExample';
-import JSONTree from 'react-json-tree';
+// import JSONTree from 'react-json-tree';
 import {convertToHTML} from 'draft-convert';
-import PanelGroup from 'react-panelgroup';
+// import PanelGroup from 'react-panelgroup';
 import gkx from 'draft-js/lib/gkx';
 import convertFromHTMLModern from 'draft-js/lib/convertFromHTMLToContentBlocks';
 
@@ -41,56 +41,56 @@ const fromHTML = gkx('draft_refactored_html_importer')
   ? convertFromHTMLModern
   : convertFromHTMLClassic;
 
-const theme = {
-  scheme: 'monokai',
-  author: 'wimer hazenberg (http://www.monokai.nl)',
-  base00: '#000000',
-  base01: '#383830',
-  base02: '#49483e',
-  base03: '#75715e',
-  base04: '#a59f85',
-  base05: '#f8f8f2',
-  base06: '#f5f4f1',
-  base07: '#f9f8f5',
-  base08: '#f92672',
-  base09: '#fd971f',
-  base0A: '#f4bf75',
-  base0B: '#a6e22e',
-  base0C: '#a1efe4',
-  base0D: '#66d9ef',
-  base0E: '#ae81ff',
-  base0F: '#cc6633',
-};
+// const theme = {
+//   scheme: 'monokai',
+//   author: 'wimer hazenberg (http://www.monokai.nl)',
+//   base00: '#000000',
+//   base01: '#383830',
+//   base02: '#49483e',
+//   base03: '#75715e',
+//   base04: '#a59f85',
+//   base05: '#f8f8f2',
+//   base06: '#f5f4f1',
+//   base07: '#f9f8f5',
+//   base08: '#f92672',
+//   base09: '#fd971f',
+//   base0A: '#f4bf75',
+//   base0B: '#a6e22e',
+//   base0C: '#a1efe4',
+//   base0D: '#66d9ef',
+//   base0E: '#ae81ff',
+//   base0F: '#cc6633',
+// };
 
-const baseRawContent = {
-  blocks: [
-    {
-      key: 'A',
-      text: 'Hello world',
-      type: 'header-one',
-    },
-  ],
-  entityMap: {},
-};
+// const baseRawContent = {
+//   blocks: [
+//     {
+//       key: 'A',
+//       text: 'Hello world',
+//       type: 'header-one',
+//     },
+//   ],
+//   entityMap: {},
+// };
 
-const baseHtmlContent = `<ol>
-  <li>one</li>
-  <li>
-    <ul>
-      <li>
-        <h1>2a</h1>
-      </li>
-      <li>2b</li>
-    </ul>
-   </li>
-   <li>three</li>
-</ol>
-`;
+// const baseHtmlContent = `<ol>
+//   <li>one</li>
+//   <li>
+//     <ul>
+//       <li>
+//         <h1>2a</h1>
+//       </li>
+//       <li>2b</li>
+//     </ul>
+//    </li>
+//    <li>three</li>
+// </ol>
+// `;
 
-const BASE_CONTENT = {
-  rawContent: JSON.stringify(baseRawContent, null, 2),
-  html: baseHtmlContent,
-};
+// const BASE_CONTENT = {
+//   rawContent: JSON.stringify(baseRawContent, null, 2),
+//   html: baseHtmlContent,
+// };
 
 class DraftJsPlaygroundContainer extends Component {
   constructor(props: Props) {
@@ -98,12 +98,15 @@ class DraftJsPlaygroundContainer extends Component {
     this.state = {
       mode: 'rawContent',
       editorState: EditorState.createEmpty(),
-      codeMirrorValue: BASE_CONTENT['rawContent'],
+      // codeMirrorValue: BASE_CONTENT['rawContent'],
     };
   }
 
   componentDidMount() {
-    this.setContent();
+    // this.setContent();
+    window.getContentState = () => this.state.editorState.getCurrentContent();
+    window.getRawContentState = () =>
+      convertToRaw(this.state.editorState.getCurrentContent());
   }
 
   onChange = editorState => {
@@ -168,12 +171,12 @@ class DraftJsPlaygroundContainer extends Component {
     }
   };
 
-  onSelectChange = ({target: {value: mode}}) => {
-    this.setState({
-      mode,
-      codeMirrorValue: BASE_CONTENT[mode],
-    });
-  };
+  // onSelectChange = ({target: {value: mode}}) => {
+  //   this.setState({
+  //     mode,
+  //     codeMirrorValue: BASE_CONTENT[mode],
+  //   });
+  // };
 
   updateCodeMirror = codeMirrorValue => {
     this.setState({codeMirrorValue});
@@ -192,11 +195,11 @@ class DraftJsPlaygroundContainer extends Component {
   };
 
   render() {
-    const {editorState, mode, codeMirrorValue} = this.state;
+    // const {editorState, mode, codeMirrorValue} = this.state;
 
     return (
       <div className="container">
-        <div className="nav-main">
+        {/* <div className="nav-main">
           <div className="wrap">
             <a
               className="nav-home"
@@ -238,9 +241,17 @@ class DraftJsPlaygroundContainer extends Component {
               </li>
             </ul>
           </div>
-        </div>
+        </div> */}
         <div className="playground-main">
-          <PanelGroup borderColor="grey">
+          <div className="DraftJsPlaygroundContainer-editor">
+            <DraftJsRichEditorExample
+              className="DraftEditor-root"
+              editorState={this.state.editorState}
+              onChange={this.onChange}
+              placeholder="Editor content is empty..."
+            />
+          </div>
+          {/* <PanelGroup borderColor="grey">
             <PanelGroup direction="column" borderColor="grey">
               <div className="DraftJsPlaygroundContainer-editor">
                 <DraftJsRichEditorExample
@@ -299,7 +310,7 @@ class DraftJsPlaygroundContainer extends Component {
                 data={editorState.getCurrentContent()}
               />
             </div>
-          </PanelGroup>
+          </PanelGroup> */}
         </div>
       </div>
     );
