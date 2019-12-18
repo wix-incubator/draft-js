@@ -21,9 +21,10 @@ const Keys = require('Keys');
 
 const editOnSelect = require('editOnSelect');
 const getContentEditableContainer = require('getContentEditableContainer');
-const getDraftEditorSelection = require('getDraftEditorSelection');
 const getEntityKeyForSelection = require('getEntityKeyForSelection');
 const nullthrows = require('nullthrows');
+const Immutable = require('immutable');
+const {List} = Immutable;
 
 /**
  * Millisecond delay to allow `compositionstart` to fire again upon
@@ -177,6 +178,7 @@ const DraftEditorCompositionHandler = {
     // }
 
     let contentState = editorState.getCurrentContent();
+    let dirtyBlocks = List();
     mutations.forEach((composedChars, offsetKey) => {
       const {blockKey, decoratorKey, leafKey} = DraftOffsetKey.decode(
         offsetKey,
@@ -221,31 +223,13 @@ const DraftEditorCompositionHandler = {
       // updated and multiple mutations are correctly applied.
       editorState = EditorState.set(editorState, {
         currentContent: contentState,
+        dirtyBlocks: dirtyBlocks.push(blockKey),
       });
     });
 
-    // When we apply the text changes to the ContentState, the selection always
-    // goes to the end of the field, but it should just stay where it is
-    // after compositionEnd.
-    const documentSelection = getDraftEditorSelection(
-      editorState,
-      getContentEditableContainer(editor),
-    );
-    const compositionEndSelectionState = documentSelection.selectionState;
-
-    editor.restoreEditorDOM();
-
-    const editorStateWithUpdatedSelection = EditorState.acceptSelection(
-      editorState,
-      compositionEndSelectionState,
-    );
-
+    editor.cleanDirtyBlocks();
     editor.update(
-      EditorState.push(
-        editorStateWithUpdatedSelection,
-        contentState,
-        'insert-characters',
-      ),
+      EditorState.push(editorState, contentState, 'insert-characters'),
     );
   },
 };

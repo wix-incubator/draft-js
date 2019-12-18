@@ -59,6 +59,7 @@ const handlerMap = {
 
 type State = {
   contentsKey: number,
+  dirtyBlocksKey: number,
 };
 
 let didInitODS = false;
@@ -254,7 +255,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     }
 
     // See `restoreEditorDOM()`.
-    this.state = {contentsKey: 0};
+    this.state = {contentsKey: 0, dirtyBlocksKey: 0};
   }
 
   /**
@@ -435,6 +436,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
             <DraftEditorContents
               {...editorContentsProps}
               key={'contents' + this.state.contentsKey}
+              dirtyBlocksKey={this.state.dirtyBlocksKey}
             />
           </div>
         </div>
@@ -582,6 +584,10 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     this.setState({contentsKey: this.state.contentsKey + 1}, () => {
       this.focus(scrollPosition);
     });
+  };
+
+  cleanDirtyBlocks: () => void = (): void => {
+    this.setState({dirtyBlocksKey: this.state.dirtyBlocksKey + 1});
   };
 
   /**

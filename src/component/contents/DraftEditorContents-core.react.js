@@ -20,6 +20,7 @@ import type {BidiDirection} from 'UnicodeBidiDirection';
 const DraftEditorBlock = require('DraftEditorBlock.react');
 const DraftOffsetKey = require('DraftOffsetKey');
 const React = require('React');
+const {Map} = require('immutable');
 
 const cx = require('cx');
 const joinClasses: (
@@ -35,6 +36,7 @@ type Props = {
   customStyleFn?: (style: DraftInlineStyle, block: BlockNodeRecord) => ?Object,
   customStyleMap?: Object,
   editorKey?: string,
+  dirtyBlocksKey: number,
   editorState: EditorState,
   textDirectionality?: BidiDirection,
 };
@@ -76,6 +78,13 @@ const getListItemClasses = (
  * the contents of the editor.
  */
 class DraftEditorContents extends React.Component<Props> {
+  blockComponentKeys: Map;
+
+  constructor(props: Props) {
+    super(props);
+    this.blockComponentKeys = Map();
+  }
+
   shouldComponentUpdate(nextProps: Props): boolean {
     const prevEditorState = this.props.editorState;
     const nextEditorState = nextProps.editorState;
@@ -123,6 +132,19 @@ class DraftEditorContents extends React.Component<Props> {
     );
   }
 
+  getBlockComponentKey(blockKey: string): string {
+    const dirtyBlocks = this.props.editorState.getDirtyBlocks();
+    let key;
+    if (dirtyBlocks.includes(blockKey)) {
+      key = `${blockKey}-${this.props.dirtyBlocksKey.toString()}`;
+      this.blockComponentKeys = this.blockComponentKeys.set(blockKey, key);
+    } else {
+      key = this.blockComponentKeys.get(blockKey) || blockKey;
+    }
+    console.log({key});
+    return key;
+  }
+
   render(): React.Node {
     const {
       blockRenderMap,
@@ -149,9 +171,9 @@ class DraftEditorContents extends React.Component<Props> {
 
     for (let ii = 0; ii < blocksAsArray.length; ii++) {
       const block = blocksAsArray[ii];
-      const key = block.getKey();
+      const blockKey = block.getKey();
       const blockType = block.getType();
-
+      const componentKey = this.getBlockComponentKey(blockKey);
       const customRenderer = blockRendererFn(block);
       let CustomComponent, customProps, customEditable;
       if (customRenderer) {
@@ -162,8 +184,8 @@ class DraftEditorContents extends React.Component<Props> {
 
       const direction = textDirectionality
         ? textDirectionality
-        : directionMap.get(key);
-      const offsetKey = DraftOffsetKey.encode(key, 0, 0);
+        : directionMap.get(blockKey);
+      const offsetKey = DraftOffsetKey.encode(blockKey, 0, 0);
       const componentProps = {
         contentState: content,
         block,
@@ -176,7 +198,7 @@ class DraftEditorContents extends React.Component<Props> {
         forceSelection,
         offsetKey,
         selection,
-        tree: editorState.getBlockTree(key),
+        tree: editorState.getBlockTree(blockKey),
       };
 
       const configForType =
@@ -211,7 +233,7 @@ class DraftEditorContents extends React.Component<Props> {
         'data-block': true,
         'data-editor': editorKey,
         'data-offset-key': offsetKey,
-        key,
+        key: componentKey,
       };
       if (customEditable !== undefined) {
         childProps = {
@@ -233,13 +255,13 @@ class DraftEditorContents extends React.Component<Props> {
         /* $FlowFixMe(>=0.112.0 site=www,mobile) This comment suppresses an
          * error found when Flow v0.112 was deployed. To see the error delete
          * this comment and run Flow. */
-        <Component {...componentProps} key={key} />,
+        <Component {...componentProps} key={componentKey} />,
       );
 
       processedBlocks.push({
         block: child,
         wrapperTemplate,
-        key,
+        blockKey,
         offsetKey,
       });
 

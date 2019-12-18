@@ -16,7 +16,7 @@ import type {DraftDecoratorType} from 'DraftDecoratorType';
 import type {DraftInlineStyle} from 'DraftInlineStyle';
 import type {EditorChangeType} from 'EditorChangeType';
 import type {EntityMap} from 'EntityMap';
-import type {List, OrderedMap} from 'immutable';
+import type {OrderedMap} from 'immutable';
 
 const BlockTree = require('BlockTree');
 const ContentState = require('ContentState');
@@ -25,7 +25,7 @@ const SelectionState = require('SelectionState');
 
 const Immutable = require('immutable');
 
-const {OrderedSet, Record, Stack} = Immutable;
+const {OrderedSet, Record, Stack, List} = Immutable;
 
 type EditorStateRecordType = {
   allowUndo: boolean,
@@ -41,6 +41,7 @@ type EditorStateRecordType = {
   selection: ?SelectionState,
   treeMap: ?OrderedMap<string, List<any>>,
   undoStack: Stack<ContentState>,
+  dirtyBlocks: List<string>,
 };
 
 const defaultRecord: EditorStateRecordType = {
@@ -57,6 +58,7 @@ const defaultRecord: EditorStateRecordType = {
   selection: null,
   treeMap: null,
   undoStack: Stack(),
+  dirtyBlocks: List(),
 };
 
 const EditorStateRecord = (Record(defaultRecord): any);
@@ -197,6 +199,10 @@ class EditorState {
 
   getLastChangeType(): ?EditorChangeType {
     return this.getImmutable().get('lastChangeType');
+  }
+
+  getDirtyBlocks(): List {
+    return this.getImmutable().get('dirtyBlocks');
   }
 
   /**
