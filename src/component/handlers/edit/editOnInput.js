@@ -22,6 +22,7 @@ const {notEmptyKey} = require('draftKeyUtils');
 const findAncestorOffsetKey = require('findAncestorOffsetKey');
 const keyCommandPlainBackspace = require('keyCommandPlainBackspace');
 const nullthrows = require('nullthrows');
+const {List} = require('immutable');
 
 const isGecko = UserAgent.isEngine('Gecko');
 
@@ -59,6 +60,8 @@ function onInputType(inputType: string, editorState: EditorState): EditorState {
  * due to a spellcheck change, and we can incorporate it into our model.
  */
 function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
+  console.log('editOnInput');
+  debugger;
   if (editor._pendingStateFromBeforeInput !== undefined) {
     editor.update(editor._pendingStateFromBeforeInput);
     editor._pendingStateFromBeforeInput = undefined;
@@ -118,9 +121,16 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
   if (domText.endsWith(DOUBLE_NEWLINE)) {
     domText = domText.slice(0, -1);
   }
-
+  console.log(
+    'editOnInput - texts',
+    domText,
+    domText.length,
+    modelText,
+    modelText.length,
+  );
   // No change -- the DOM is up to date. Nothing to do here.
   if (domText === modelText) {
+    console.log('editOnInput - domText === modelText', blockKey);
     // This can be buggy for some Android keyboards because they don't fire
     // standard onkeydown/pressed events and only fired editOnInput
     // so domText is already changed by the browser and ends up being equal
@@ -132,10 +142,20 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
      * https://w3c.github.io/input-events/#dom-inputevent-inputtype */
     const {inputType} = e.nativeEvent;
     if (inputType) {
-      const newEditorState = onInputType(inputType, editorState);
+      console.log('editOnInput - inputType 2', inputType);
+      let newEditorState = onInputType(inputType, editorState);
       if (newEditorState !== editorState) {
-        editor.restoreEditorDOM();
+        console.log(
+          'editOnInput - cleanDirtyBlocks',
+          blockKey,
+          window.blockKeyToUnmount,
+        );
+        newEditorState = EditorState.set(editorState, {
+          dirtyBlocks: List.of(window.blockKeyToUnmount),
+        });
+        editor.cleanDirtyBlocks();
         editor.update(newEditorState);
+        // editor.restoreEditorDOM();
         return;
       }
     }

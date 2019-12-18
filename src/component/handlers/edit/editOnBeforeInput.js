@@ -81,6 +81,7 @@ function editOnBeforeInput(
   editor: DraftEditor,
   e: SyntheticInputEvent<HTMLElement>,
 ): void {
+  console.log('editOnBeforeInput');
   if (editor._pendingStateFromBeforeInput !== undefined) {
     editor.update(editor._pendingStateFromBeforeInput);
     editor._pendingStateFromBeforeInput = undefined;
@@ -93,6 +94,7 @@ function editOnBeforeInput(
   // In some cases (ex: IE ideographic space insertion) no character data
   // is provided. There's nothing to do when this happens.
   if (!chars) {
+    console.log('editOnBeforeInput - no chars');
     return;
   }
 
@@ -108,6 +110,7 @@ function editOnBeforeInput(
     )
   ) {
     e.preventDefault();
+    console.log('editOnBeforeInput - event handled');
     return;
   }
 
@@ -132,6 +135,7 @@ function editOnBeforeInput(
         true,
       ),
     );
+    console.log('editOnBeforeInput - selection is collapsed');
     return;
   }
 
@@ -227,6 +231,7 @@ function editOnBeforeInput(
       nullthrows(editorState.getDirectionMap()).get(anchorKey);
   }
 
+  console.log({mustPreventNative});
   if (mustPreventNative) {
     e.preventDefault();
     newEditorState = EditorState.set(newEditorState, {

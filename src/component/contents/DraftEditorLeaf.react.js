@@ -132,6 +132,10 @@ class DraftEditorLeaf extends React.Component<Props> {
     this._setSelection();
   }
 
+  componentWillUnmount(): void {
+    console.log('DraftEditorLeaf - willUnmount');
+  }
+
   render(): React.Node {
     const {block} = this.props;
     let {text} = this.props;

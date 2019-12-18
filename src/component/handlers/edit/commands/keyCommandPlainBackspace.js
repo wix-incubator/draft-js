@@ -30,7 +30,10 @@ function keyCommandPlainBackspace(editorState: EditorState): EditorState {
       const content = strategyState.getCurrentContent();
       const key = selection.getAnchorKey();
       const offset = selection.getAnchorOffset();
-      const charBehind = content.getBlockForKey(key).getText()[offset - 1];
+      const block = content.getBlockForKey(key);
+      console.log({blockKey: block.getKey()});
+      window.blockKeyToUnmount = block.getKey();
+      const charBehind = block.getText()[offset - 1];
       return moveSelectionBackward(
         strategyState,
         charBehind ? UnicodeUtils.getUTF16Length(charBehind, 0) : 1,

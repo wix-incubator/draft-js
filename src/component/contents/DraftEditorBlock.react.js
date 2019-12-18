@@ -137,6 +137,10 @@ class DraftEditorBlock extends React.Component<Props> {
     }
   }
 
+  componentWillUnmount(): void {
+    console.log('DraftEditorBlock - willUnmount', this.props.block.getKey());
+  }
+
   _renderChildren(): Array<React.Node> {
     const block = this.props.block;
     const blockKey = block.getKey();
@@ -227,6 +231,7 @@ class DraftEditorBlock extends React.Component<Props> {
   }
 
   render(): React.Node {
+    console.log('DraftEditorBlock - render', this.props.block.getKey());
     const {direction, offsetKey} = this.props;
     const className = cx({
       'public/DraftStyleDefault/block': true,

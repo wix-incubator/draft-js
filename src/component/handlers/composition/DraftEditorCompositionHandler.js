@@ -23,8 +23,7 @@ const editOnSelect = require('editOnSelect');
 const getContentEditableContainer = require('getContentEditableContainer');
 const getEntityKeyForSelection = require('getEntityKeyForSelection');
 const nullthrows = require('nullthrows');
-const Immutable = require('immutable');
-const {List} = Immutable;
+const {List} = require('immutable');
 
 /**
  * Millisecond delay to allow `compositionstart` to fire again upon
