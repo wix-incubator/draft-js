@@ -133,6 +133,7 @@ class DOMObserver {
 
   registerMutation(mutation: MutationRecordT): void {
     const textContent = this.getMutationTextContent(mutation);
+    console.log('DOMObserver - registerMutation', mutation, textContent);
     if (textContent != null) {
       const offsetKey = nullthrows(findAncestorOffsetKey(mutation.target));
       this.mutations = this.mutations.set(offsetKey, textContent);

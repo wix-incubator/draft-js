@@ -77,6 +77,7 @@ class DraftEditorTextNode extends React.Component<Props> {
     // By flipping this flag, we also keep flipping keys which forces
     // React to remount this node every time it rerenders.
     this._forceFlag = false;
+    console.log('DraftEditorTextNode - constructor');
   }
 
   shouldComponentUpdate(nextProps: Props): boolean {
@@ -85,6 +86,11 @@ class DraftEditorTextNode extends React.Component<Props> {
 
     invariant(isElement(node), 'node is not an Element');
     const elementNode: Element = (node: any);
+    console.log(
+      'DraftEditorTextNode',
+      elementNode.textContent,
+      nextProps.children,
+    );
     if (shouldBeNewline) {
       return !isNewline(elementNode);
     }
@@ -99,6 +105,10 @@ class DraftEditorTextNode extends React.Component<Props> {
     this._forceFlag = !this._forceFlag;
   }
 
+  componentWillUnmount(): void {
+    console.log('DraftEditorTextNode - willUnmount');
+  }
+
   render(): React.Node {
     if (this.props.children === '') {
       return this._forceFlag
@@ -107,6 +117,7 @@ class DraftEditorTextNode extends React.Component<Props> {
     }
     return (
       <span
+        style={{background: 'green'}}
         key={this._forceFlag ? 'A' : 'B'}
         data-text="true"
         ref={ref => (this._node = ref)}>

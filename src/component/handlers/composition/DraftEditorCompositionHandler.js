@@ -60,6 +60,7 @@ const DraftEditorCompositionHandler = {
    * mode. Continue the current composition session to prevent a re-render.
    */
   onCompositionStart: function(editor: DraftEditor): void {
+    console.log('onCompositionStart');
     stillComposing = true;
     startDOMObserver(editor);
   },
@@ -79,6 +80,7 @@ const DraftEditorCompositionHandler = {
    * Google Input Tools on Windows 8.1 fires `compositionend` three times.
    */
   onCompositionEnd: function(editor: DraftEditor): void {
+    console.log('onCompositionEnd');
     resolved = false;
     stillComposing = false;
     setTimeout(() => {
@@ -199,6 +201,14 @@ const DraftEditorCompositionHandler = {
       const currentStyle = contentState
         .getBlockForKey(blockKey)
         .getInlineStyleAt(start);
+
+      console.log('resolveComposition', {
+        composedChars,
+        start,
+        end,
+        entityKey,
+        mutations: mutations.toJS(),
+      });
 
       contentState = DraftModifier.replaceText(
         contentState,
