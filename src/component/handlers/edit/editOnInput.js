@@ -134,7 +134,8 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     if (inputType) {
       const newEditorState = onInputType(inputType, editorState);
       if (newEditorState !== editorState) {
-        editor.restoreEditorDOM();
+        const blockKeyAfter = content.getBlockAfter(blockKey).getKey();
+        editor.restoreBlockDOM(blockKeyAfter);
         editor.update(newEditorState);
         return;
       }

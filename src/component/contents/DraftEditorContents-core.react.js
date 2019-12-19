@@ -39,6 +39,7 @@ type Props = {
   dirtyBlocksKey: number,
   editorState: EditorState,
   textDirectionality?: BidiDirection,
+  registerFiberNode: (fiberNode: any) => void,
 };
 
 /**
@@ -155,6 +156,7 @@ class DraftEditorContents extends React.Component<Props> {
       editorState,
       editorKey,
       textDirectionality,
+      registerFiberNode,
     } = this.props;
 
     const content = editorState.getCurrentContent();
@@ -199,6 +201,7 @@ class DraftEditorContents extends React.Component<Props> {
         offsetKey,
         selection,
         tree: editorState.getBlockTree(blockKey),
+        registerFiberNode,
       };
 
       const configForType =
