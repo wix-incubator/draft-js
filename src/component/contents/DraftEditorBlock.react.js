@@ -52,6 +52,7 @@ type Props = {
   selection: SelectionState,
   startIndent?: boolean,
   tree: List<any>,
+  registerFiberNode: (fiberNode: any) => void,
 };
 
 /**
@@ -96,6 +97,8 @@ class DraftEditorBlock extends React.Component<Props> {
    * scroll parent.
    */
   componentDidMount(): void {
+    this.props.registerFiberNode(this);
+
     const selection = this.props.selection;
     const endKey = selection.getEndKey();
     if (!selection.getHasFocus() || endKey !== this.props.block.getKey()) {

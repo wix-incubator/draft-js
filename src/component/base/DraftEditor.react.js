@@ -31,6 +31,7 @@ const ReactDOM = require('ReactDOM');
 const Scroll = require('Scroll');
 const Style = require('Style');
 const UserAgent = require('UserAgent');
+const {Map} = require('immutable');
 
 const cx = require('cx');
 const generateRandomKey = require('generateRandomKey');
@@ -159,6 +160,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   _latestEditorState: EditorState;
   _latestCommittedEditorState: EditorState;
   _pendingStateFromBeforeInput: void | EditorState;
+  _blocksFiberNodes = Map;
 
   /**
    * Define proxies that can route events to the current handler.
@@ -190,6 +192,8 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   blur: () => void;
   setMode: (mode: DraftEditorModes) => void;
   exitCurrentMode: () => void;
+  registerFiberNode: (fiberNode: any) => void;
+  restoreBlockDOM: (blockKey: string) => void;
   restoreEditorDOM: (scrollPosition?: DraftScrollPosition) => void;
   setClipboard: (clipboard: ?BlockMap) => void;
   getClipboard: () => ?BlockMap;
@@ -209,6 +213,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     this._placeholderAccessibilityID = 'placeholder-' + this._editorKey;
     this._latestEditorState = props.editorState;
     this._latestCommittedEditorState = props.editorState;
+    this._blocksFiberNodes = Map();
 
     this._onBeforeInput = this._buildHandler('onBeforeInput');
     this._onBlur = this._buildHandler('onBlur');
@@ -437,6 +442,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
               {...editorContentsProps}
               key={'contents' + this.state.contentsKey}
               dirtyBlocksKey={this.state.dirtyBlocksKey}
+              registerFiberNode={this.registerFiberNode}
             />
           </div>
         </div>
@@ -567,6 +573,37 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
 
   exitCurrentMode: () => void = (): void => {
     this.setMode('edit');
+  };
+
+  registerFiberNode: (fiberNode: any) => void = (fiberNode: any): void => {
+    this._blocksFiberNodes = this._blocksFiberNodes.set(
+      fiberNode._reactInternalFiber.key,
+      fiberNode,
+    );
+  };
+
+  restoreBlockDOM: (blockKey: string) => void = (blockKey: string): void => {
+    const blockRef = this._blocksFiberNodes.get(blockKey);
+    const draftContents = window.draftContentsFiber.child;
+    let firstChild = draftContents.child;
+    let blockBefore = firstChild;
+    while (blockBefore.sibling && blockBefore.sibling.key !== blockKey) {
+      blockBefore = blockBefore.sibling;
+    }
+
+    if (blockBefore.sibling && blockBefore.sibling.sibling) {
+      console.log('restoreBlockDom - replacing sibling', blockBefore);
+      blockBefore.sibling = blockBefore.sibling.sibling;
+    } else {
+      console.log('restoreBlockDom - deleting sibling', blockBefore.sibling);
+      blockBefore.sibling = null;
+      console.log('draftContentsFiber 1', window.draftContentsFiber.child.child);
+    }
+    this._blocksFiberNodes = this._blocksFiberNodes.delete(blockKey);
+    // try {
+    // } catch (e) {
+    //   this.restoreEditorDOM();
+    // }
   };
 
   /**

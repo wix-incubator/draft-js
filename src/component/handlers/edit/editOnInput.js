@@ -59,6 +59,7 @@ function onInputType(inputType: string, editorState: EditorState): EditorState {
  * due to a spellcheck change, and we can incorporate it into our model.
  */
 function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
+  console.log('editOnInput');
   if (editor._pendingStateFromBeforeInput !== undefined) {
     editor.update(editor._pendingStateFromBeforeInput);
     editor._pendingStateFromBeforeInput = undefined;
@@ -134,7 +135,9 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     if (inputType) {
       const newEditorState = onInputType(inputType, editorState);
       if (newEditorState !== editorState) {
-        editor.restoreEditorDOM();
+        const blockKeyAfter = content.getBlockAfter(blockKey).getKey();
+        console.log('editOnInput restoreBlockDom');
+        editor.restoreBlockDOM(blockKeyAfter);
         editor.update(newEditorState);
         return;
       }
