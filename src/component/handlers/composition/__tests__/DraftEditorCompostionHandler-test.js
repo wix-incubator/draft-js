@@ -97,6 +97,8 @@ beforeEach(() => {
     _onKeyDown: jest.fn(),
     setMode: jest.fn(),
     restoreEditorDOM: jest.fn(),
+    registerComposedBlockKey: jest.fn(),
+    restoreComposedBlocksDOM: jest.fn(),
     exitCurrentMode: jest.fn(),
     update: jest.fn(state => (editor._latestEditorState = state)),
   };
