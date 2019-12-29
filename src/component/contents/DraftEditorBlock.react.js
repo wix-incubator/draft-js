@@ -106,18 +106,33 @@ class DraftEditorBlock extends React.Component<Props> {
       return;
     }
     const scrollParent = Style.getScrollParent(blockNode);
+    //returns window
     const scrollPosition = getScrollPosition(scrollParent);
     let scrollDelta;
 
     if (scrollParent === window) {
-      const nodePosition = getElementPosition(blockNode);
-      const nodeBottom = nodePosition.y + nodePosition.height;
-      const viewportHeight = getViewportDimensions().height;
-      scrollDelta = nodeBottom - viewportHeight;
+      const rect = blockNode.getBoundingClientRect();
+      const proposedNodePosition = {
+        x: rect.left,
+        y: rect.top + window.scrollY,
+        width: rect.right - rect.left,
+        height: rect.bottom - rect.top,
+      };
+      const proposedViewportHeight = document.body.clientHeight;
+      const proposedNodeBottom =
+        proposedNodePosition.y + proposedNodePosition.height;
+      console.log('porposed solution', {
+        proposedNodePosition,
+        proposedViewportHeight,
+        proposedNodeBottom,
+      });
+      const heightAfterKeyboard = window.innerHeight; // this is a for a poc
+      scrollDelta = proposedNodeBottom - (window.scrollY + heightAfterKeyboard);
+      console.log({scrollDelta, scrollY: window.scrollY, proposedNodeBottom});
       if (scrollDelta > 0) {
         window.scrollTo(
           scrollPosition.x,
-          scrollPosition.y + scrollDelta + SCROLL_BUFFER,
+          window.scrollY + scrollDelta + SCROLL_BUFFER,
         );
       }
     } else {
