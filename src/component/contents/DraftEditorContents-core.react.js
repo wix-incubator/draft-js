@@ -37,6 +37,7 @@ type Props = {
   editorKey?: string,
   editorState: EditorState,
   textDirectionality?: BidiDirection,
+  getBlockComponentKey: (blockKey: string) => string,
 };
 
 /**
@@ -149,7 +150,7 @@ class DraftEditorContents extends React.Component<Props> {
 
     for (let ii = 0; ii < blocksAsArray.length; ii++) {
       const block = blocksAsArray[ii];
-      const key = block.getKey();
+      const blockKey = block.getKey();
       const blockType = block.getType();
 
       const customRenderer = blockRendererFn(block);
@@ -162,8 +163,8 @@ class DraftEditorContents extends React.Component<Props> {
 
       const direction = textDirectionality
         ? textDirectionality
-        : directionMap.get(key);
-      const offsetKey = DraftOffsetKey.encode(key, 0, 0);
+        : directionMap.get(blockKey);
+      const offsetKey = DraftOffsetKey.encode(blockKey, 0, 0);
       const componentProps = {
         contentState: content,
         block,
@@ -176,7 +177,7 @@ class DraftEditorContents extends React.Component<Props> {
         forceSelection,
         offsetKey,
         selection,
-        tree: editorState.getBlockTree(key),
+        tree: editorState.getBlockTree(blockKey),
       };
 
       const configForType =
@@ -206,12 +207,13 @@ class DraftEditorContents extends React.Component<Props> {
       }
 
       const Component = CustomComponent || DraftEditorBlock;
+      const componentKey = this.props.getBlockComponentKey(blockKey);
       let childProps = {
         className,
         'data-block': true,
         'data-editor': editorKey,
         'data-offset-key': offsetKey,
-        key,
+        key: componentKey,
       };
       if (customEditable !== undefined) {
         childProps = {
@@ -233,13 +235,13 @@ class DraftEditorContents extends React.Component<Props> {
         /* $FlowFixMe(>=0.112.0 site=www,mobile) This comment suppresses an
          * error found when Flow v0.112 was deployed. To see the error delete
          * this comment and run Flow. */
-        <Component {...componentProps} key={key} />,
+        <Component {...componentProps} key={componentKey} />,
       );
 
       processedBlocks.push({
         block: child,
         wrapperTemplate,
-        key,
+        key: blockKey,
         offsetKey,
       });
 
