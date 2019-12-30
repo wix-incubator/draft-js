@@ -1,5 +1,5 @@
 {
-  "name": "draft-js",
+  "name": "@wix/draft-js",
   "description": "A React framework for building text editors.",
   "version": "0.11.3",
   "keywords": [
@@ -9,7 +9,7 @@
     "richtext"
   ],
   "homepage": "http://draftjs.org/",
-  "bugs": "https://github.com/facebook/draft-js/issues",
+  "bugs": "https://github.com/wix/draft-js/issues",
   "files": [
     "dist/",
     "lib/",
@@ -17,7 +17,7 @@
   ],
   "main": "lib/Draft.js",
   "style": "dist/Draft.css",
-  "repository": "facebook/draft-js",
+  "repository": "wix/draft-js",
   "license": "MIT",
   "scripts": {
     "prepublish": "npm run build",
@@ -121,5 +121,9 @@
       "<rootDir>/node_modules/react/",
       "<rootDir>/node_modules/react-dom/"
     ]
+  },
+  "unpkg": true,
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   }
 }
