@@ -40,6 +40,7 @@ const gkx = require('gkx');
 const invariant = require('invariant');
 const isHTMLElement = require('isHTMLElement');
 const nullthrows = require('nullthrows');
+const {Map} = require('immutable');
 
 const isIE = UserAgent.isBrowser('IE');
 
@@ -59,6 +60,7 @@ const handlerMap = {
 
 type State = {
   contentsKey: number,
+  blocksComponentKey: number,
 };
 
 let didInitODS = false;
@@ -158,6 +160,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   _latestEditorState: EditorState;
   _latestCommittedEditorState: EditorState;
   _pendingStateFromBeforeInput: void | EditorState;
+  _alteredBlockComponentKeys: Map<string, ?string>;
 
   /**
    * Define proxies that can route events to the current handler.
@@ -189,7 +192,9 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   blur: () => void;
   setMode: (mode: DraftEditorModes) => void;
   exitCurrentMode: () => void;
+  registerUnsyncedBlockKey: (blockKey: string) => void;
   restoreEditorDOM: (scrollPosition?: DraftScrollPosition) => void;
+  restoreUnsyncedBlocksDOM: () => void;
   setClipboard: (clipboard: ?BlockMap) => void;
   getClipboard: () => ?BlockMap;
   getEditorKey: () => string;
@@ -208,6 +213,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     this._placeholderAccessibilityID = 'placeholder-' + this._editorKey;
     this._latestEditorState = props.editorState;
     this._latestCommittedEditorState = props.editorState;
+    this._alteredBlockComponentKeys = Map();
 
     this._onBeforeInput = this._buildHandler('onBeforeInput');
     this._onBlur = this._buildHandler('onBlur');
@@ -253,8 +259,8 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
       });
     }
 
-    // See `restoreEditorDOM()`.
-    this.state = {contentsKey: 0};
+    // See `restoreEditorDOM()` and `restoreUnsyncedBlocksDOM()`
+    this.state = {contentsKey: 0, blocksComponentKey: 0};
   }
 
   /**
@@ -366,6 +372,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
       editorKey: this._editorKey,
       editorState,
       textDirectionality,
+      getBlockComponentKey: this.getBlockComponentKey,
     };
 
     return (
@@ -567,6 +574,33 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     this.setMode('edit');
   };
 
+  registerUnsyncedBlockKey: (blockKey: string) => void = (
+    blockKey: string,
+  ): void => {
+    this._alteredBlockComponentKeys = this._alteredBlockComponentKeys.set(
+      blockKey,
+      undefined,
+    );
+  };
+
+  getBlockComponentKey: (blockKey: string) => string = (
+    blockKey: string,
+  ): string => {
+    if (this._alteredBlockComponentKeys.has(blockKey)) {
+      let key = this._alteredBlockComponentKeys.get(blockKey);
+      if (!key) {
+        key = `${blockKey}-${this.state.blocksComponentKey.toString()}`;
+        this._alteredBlockComponentKeys = this._alteredBlockComponentKeys.set(
+          blockKey,
+          key,
+        );
+      }
+      return key;
+    } else {
+      return blockKey;
+    }
+  };
+
   /**
    * Used via `this.restoreEditorDOM()`.
    *
@@ -579,8 +613,18 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   restoreEditorDOM: (scrollPosition?: DraftScrollPosition) => void = (
     scrollPosition?: DraftScrollPosition,
   ): void => {
-    this.setState({contentsKey: this.state.contentsKey + 1}, () => {
-      this.focus(scrollPosition);
+    this._alteredBlockComponentKeys = this._alteredBlockComponentKeys.clear();
+    this.setState(
+      {contentsKey: this.state.contentsKey + 1, blocksComponentKey: 0},
+      () => {
+        this.focus(scrollPosition);
+      },
+    );
+  };
+
+  restoreUnsyncedBlocksDOM: () => void = (): void => {
+    this.setState({
+      blocksComponentKey: this.state.blocksComponentKey + 1,
     });
   };
 

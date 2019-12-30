@@ -21,7 +21,6 @@ const Keys = require('Keys');
 
 const editOnSelect = require('editOnSelect');
 const getContentEditableContainer = require('getContentEditableContainer');
-const getDraftEditorSelection = require('getDraftEditorSelection');
 const getEntityKeyForSelection = require('getEntityKeyForSelection');
 const nullthrows = require('nullthrows');
 
@@ -207,6 +206,9 @@ const DraftEditorCompositionHandler = {
         currentStyle,
         entityKey,
       );
+
+      editor.registerUnsyncedBlockKey(blockKey);
+
       // We need to update the editorState so the leaf node ranges are properly
       // updated and multiple mutations are correctly applied.
       editorState = EditorState.set(editorState, {
@@ -214,28 +216,10 @@ const DraftEditorCompositionHandler = {
       });
     });
 
-    // When we apply the text changes to the ContentState, the selection always
-    // goes to the end of the field, but it should just stay where it is
-    // after compositionEnd.
-    const documentSelection = getDraftEditorSelection(
-      editorState,
-      getContentEditableContainer(editor),
-    );
-    const compositionEndSelectionState = documentSelection.selectionState;
-
-    editor.restoreEditorDOM();
-
-    const editorStateWithUpdatedSelection = EditorState.acceptSelection(
-      editorState,
-      compositionEndSelectionState,
-    );
+    editor.restoreUnsyncedBlocksDOM();
 
     editor.update(
-      EditorState.push(
-        editorStateWithUpdatedSelection,
-        contentState,
-        'insert-characters',
-      ),
+      EditorState.push(editorState, contentState, 'insert-characters'),
     );
   },
 };
