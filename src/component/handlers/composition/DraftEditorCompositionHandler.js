@@ -179,6 +179,11 @@ const DraftEditorCompositionHandler = {
         offsetKey,
       );
 
+      const entityType = contentState.getBlockForKey(blockKey).getType();
+      if (entityType === 'atomic') {
+        return;
+      }
+
       const {start, end} = editorState
         .getBlockTree(blockKey)
         .getIn([decoratorKey, 'leaves', leafKey]);
@@ -207,6 +212,7 @@ const DraftEditorCompositionHandler = {
         entityKey,
       );
 
+      console.log('resolveComposition', blockKey);
       editor.registerUnsyncedBlockKey(blockKey);
 
       // We need to update the editorState so the leaf node ranges are properly
