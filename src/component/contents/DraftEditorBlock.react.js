@@ -35,6 +35,7 @@ const getViewportDimensions = require('getViewportDimensions');
 const invariant = require('invariant');
 const isHTMLElement = require('isHTMLElement');
 const nullthrows = require('nullthrows');
+const UAParser = require('ua-parser-js');
 
 const SCROLL_BUFFER = 10;
 
@@ -103,7 +104,8 @@ class DraftEditorBlock extends React.Component<Props> {
     }
 
     const blockNode = this._node;
-    if (blockNode == null) {
+    const {ua: userAgent} = new UAParser().getResult();
+    if (blockNode == null || userAgent.indexOf('WixOneAppRichContent') !== -1) {
       return;
     }
     const scrollParent = Style.getScrollParent(blockNode);
