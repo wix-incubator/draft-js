@@ -212,7 +212,6 @@ const DraftEditorCompositionHandler = {
         entityKey,
       );
 
-      console.log('resolveComposition', blockKey);
       editor.registerUnsyncedBlockKey(blockKey);
 
       // We need to update the editorState so the leaf node ranges are properly
