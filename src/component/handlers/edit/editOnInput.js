@@ -108,6 +108,7 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     .getIn([decoratorKey, 'leaves', leafKey]);
 
   const content = editorState.getCurrentContent();
+  const selection = editorState.getSelection();
   const block = content.getBlockForKey(blockKey);
   const modelText = block.getText().slice(start, end);
 
@@ -119,18 +120,20 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     domText = domText.slice(0, -1);
   }
 
-  // No change -- the DOM is up to date. Nothing to do here.
-  if (domText === modelText) {
+  /* $FlowFixMe inputType is only defined on a draft of a standard.
+   * https://w3c.github.io/input-events/#dom-inputevent-inputtype */
+  const {inputType} = e.nativeEvent;
+  const selectionAnchorOffset = selection.getAnchorOffset();
+  if (
+    domText === modelText || // No change -- the DOM is up to date. Nothing to do here.
+    (inputType === 'deleteContentBackward' && selectionAnchorOffset === 0) // Backspace at the beggining of a block. Two blocks are merging.
+  ) {
     // This can be buggy for some Android keyboards because they don't fire
     // standard onkeydown/pressed events and only fired editOnInput
     // so domText is already changed by the browser and ends up being equal
     // to modelText unexpectedly.
     // Newest versions of Android support the dom-inputevent-inputtype
     // and we can use the `inputType` to properly apply the state changes.
-
-    /* $FlowFixMe inputType is only defined on a draft of a standard.
-     * https://w3c.github.io/input-events/#dom-inputevent-inputtype */
-    const {inputType} = e.nativeEvent;
     if (inputType) {
       const newEditorState = onInputType(inputType, editorState);
       if (newEditorState !== editorState) {
@@ -141,8 +144,6 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     }
     return;
   }
-
-  const selection = editorState.getSelection();
 
   // We'll replace the entire leaf with the text content of the target.
   const targetRange = selection.merge({
