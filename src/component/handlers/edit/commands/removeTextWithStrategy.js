@@ -30,8 +30,9 @@ function removeTextWithStrategy(
   editorState: EditorState,
   strategy: (editorState: EditorState) => SelectionState,
   direction: DraftRemovalDirection,
+  lastUncollapsedSelectionState: ?SelectionState,
 ): ContentState {
-  const selection = editorState.getSelection();
+  const selection = lastUncollapsedSelectionState || editorState.getSelection();
   const content = editorState.getCurrentContent();
   let target = selection;
   const anchorKey = selection.getAnchorKey();

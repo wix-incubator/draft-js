@@ -12,6 +12,7 @@
 'use strict';
 
 const EditorState = require('EditorState');
+import type SelectionState from 'SelectionState';
 const UnicodeUtils = require('UnicodeUtils');
 
 const moveSelectionBackward = require('moveSelectionBackward');
@@ -22,7 +23,10 @@ const removeTextWithStrategy = require('removeTextWithStrategy');
  * character. This operation is Unicode-aware, so removing a single character
  * will remove a surrogate pair properly as well.
  */
-function keyCommandPlainBackspace(editorState: EditorState): EditorState {
+function keyCommandPlainBackspace(
+  editorState: EditorState,
+  lastUncollapsedSelectionState: ?SelectionState = null,
+): EditorState {
   const afterRemoval = removeTextWithStrategy(
     editorState,
     strategyState => {
@@ -37,6 +41,7 @@ function keyCommandPlainBackspace(editorState: EditorState): EditorState {
       );
     },
     'backward',
+    lastUncollapsedSelectionState,
   );
 
   if (afterRemoval === editorState.getCurrentContent()) {

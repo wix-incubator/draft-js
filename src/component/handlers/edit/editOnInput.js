@@ -12,6 +12,7 @@
 'use strict';
 
 import type DraftEditor from 'DraftEditor.react';
+import type SelectionState from 'SelectionState';
 
 const DraftModifier = require('DraftModifier');
 const DraftOffsetKey = require('DraftOffsetKey');
@@ -27,10 +28,17 @@ const isGecko = UserAgent.isEngine('Gecko');
 
 const DOUBLE_NEWLINE = '\n\n';
 
-function onInputType(inputType: string, editorState: EditorState): EditorState {
+function onInputType(
+  inputType: string,
+  editorState: EditorState,
+  lastUncollapsedSelectionState: ?SelectionState,
+): EditorState {
   switch (inputType) {
     case 'deleteContentBackward':
-      return keyCommandPlainBackspace(editorState);
+      return keyCommandPlainBackspace(
+        editorState,
+        lastUncollapsedSelectionState,
+      );
   }
   return editorState;
 }
@@ -120,13 +128,22 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     domText = domText.slice(0, -1);
   }
 
+  const lastUncollapsedSelection = editor.getLastUncollapsedSelection();
+  const isMultiBlockSelection =
+    lastUncollapsedSelection &&
+    lastUncollapsedSelection.getAnchorKey() !==
+      lastUncollapsedSelection.getFocusKey();
+
   /* $FlowFixMe inputType is only defined on a draft of a standard.
    * https://w3c.github.io/input-events/#dom-inputevent-inputtype */
   const {inputType} = e.nativeEvent;
-  const selectionAnchorOffset = selection.getAnchorOffset();
+  const handleBlockMerge =
+    inputType === 'deleteContentBackward' &&
+    (selection.getAnchorOffset() === 0 || isMultiBlockSelection);
+
   if (
     domText === modelText || // No change -- the DOM is up to date. Nothing to do here.
-    (inputType === 'deleteContentBackward' && selectionAnchorOffset === 0) // Backspace at the beggining of a block. Two blocks are merging.
+    handleBlockMerge // Backspace -- two blocks are merging.
   ) {
     // This can be buggy for some Android keyboards because they don't fire
     // standard onkeydown/pressed events and only fired editOnInput
@@ -134,13 +151,14 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     // to modelText unexpectedly.
     // Newest versions of Android support the dom-inputevent-inputtype
     // and we can use the `inputType` to properly apply the state changes.
-    if (inputType) {
-      const newEditorState = onInputType(inputType, editorState);
-      if (newEditorState !== editorState) {
-        editor.restoreEditorDOM();
-        editor.update(newEditorState);
-        return;
-      }
+    const newEditorState = onInputType(
+      inputType,
+      editorState,
+      lastUncollapsedSelection,
+    );
+    if (newEditorState !== editorState) {
+      editor.restoreEditorDOM();
+      editor.update(newEditorState);
     }
     return;
   }

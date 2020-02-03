@@ -56,11 +56,12 @@ test('restoreEditorDOM and keyCommandPlainBackspace are NOT called when the `inp
       props: {},
       update: jest.fn(),
       restoreEditorDOM: jest.fn(),
+      getLastUncollapsedSelection: jest.fn(),
       editor: editorNode,
     };
 
     const inputEvent = {
-      nativeEvent: {inputType: 'insetText'},
+      nativeEvent: {inputType: 'insertText'},
       currentTarget: editorNode,
     };
 
@@ -86,6 +87,7 @@ test('restoreEditorDOM and keyCommandPlainBackspace are called when backspace is
       props: {},
       update: jest.fn(),
       restoreEditorDOM: jest.fn(),
+      getLastUncollapsedSelection: jest.fn(),
       editor: editorNode,
     };
 
@@ -104,6 +106,7 @@ test('restoreEditorDOM and keyCommandPlainBackspace are called when backspace is
       .value;
     expect(require('keyCommandPlainBackspace')).toHaveBeenCalledWith(
       editorState,
+      undefined,
     );
     expect(editor.restoreEditorDOM).toHaveBeenCalledTimes(1);
     expect(editor.update).toHaveBeenCalledWith(newEditorState);

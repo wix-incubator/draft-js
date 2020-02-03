@@ -16,6 +16,7 @@ import type {BlockMap} from 'BlockMap';
 import type {DraftEditorModes} from 'DraftEditorModes';
 import type {DraftEditorDefaultProps, DraftEditorProps} from 'DraftEditorProps';
 import type {DraftScrollPosition} from 'DraftScrollPosition';
+import type SelectionState from 'SelectionState';
 
 const DefaultDraftBlockRenderMap = require('DefaultDraftBlockRenderMap');
 const DefaultDraftInlineStyle = require('DefaultDraftInlineStyle');
@@ -40,6 +41,7 @@ const gkx = require('gkx');
 const invariant = require('invariant');
 const isHTMLElement = require('isHTMLElement');
 const nullthrows = require('nullthrows');
+const setImmediate = require('setImmediate');
 const {Map} = require('immutable');
 
 const isIE = UserAgent.isBrowser('IE');
@@ -159,6 +161,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   _placeholderAccessibilityID: string;
   _latestEditorState: EditorState;
   _latestCommittedEditorState: EditorState;
+  _lastUncollapsedSelectionState: ?SelectionState;
   _pendingStateFromBeforeInput: void | EditorState;
   _alteredBlockComponentKeys: Map<string, ?string>;
 
@@ -213,6 +216,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     this._placeholderAccessibilityID = 'placeholder-' + this._editorKey;
     this._latestEditorState = props.editorState;
     this._latestCommittedEditorState = props.editorState;
+    this._lastUncollapsedSelectionState = null;
     this._alteredBlockComponentKeys = Map();
 
     this._onBeforeInput = this._buildHandler('onBeforeInput');
@@ -601,6 +605,12 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     }
   };
 
+  getLastUncollapsedSelection: () => ?SelectionState = (): ?SelectionState => {
+    const lastUncollapsedSelectionState = this._lastUncollapsedSelectionState;
+    this._lastUncollapsedSelectionState = null;
+    return lastUncollapsedSelectionState;
+  };
+
   /**
    * Used via `this.restoreEditorDOM()`.
    *
@@ -657,6 +667,15 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
    */
   update: EditorState => void = (editorState: EditorState): void => {
     this._latestEditorState = editorState;
+    const selection = editorState.getSelection();
+    if (!selection.isCollapsed()) {
+      this._lastUncollapsedSelectionState = selection;
+    } else {
+      // Reset on next tick to allow editOnInput to read the current value
+      setImmediate(() => {
+        this._lastUncollapsedSelectionState = null;
+      });
+    }
     this.props.onChange(editorState);
   };
 
