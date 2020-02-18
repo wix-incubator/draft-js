@@ -19,7 +19,7 @@ const EditorState = require('EditorState');
 const getContentEditableContainer = require('getContentEditableContainer');
 const getDraftEditorSelection = require('getDraftEditorSelection');
 
-function editOnSelect(editor: DraftEditor): void {
+function editOnSelect(editor: DraftEditor, e: SyntheticInputEvent<>, keepInlineStyleOverride: boolean): void {
   if (
     editor._blockSelectEvents ||
     editor._latestEditorState !== editor.props.editorState
@@ -49,11 +49,13 @@ function editOnSelect(editor: DraftEditor): void {
       editorState = EditorState.forceSelection(
         editorState,
         updatedSelectionState,
+        keepInlineStyleOverride,
       );
     } else {
       editorState = EditorState.acceptSelection(
         editorState,
         updatedSelectionState,
+        keepInlineStyleOverride,
       );
     }
     editor.update(editorState);

@@ -87,7 +87,9 @@ const DraftEditorCompositionHandler = {
     }, RESOLVE_DELAY);
   },
 
-  onSelect: editOnSelect,
+  onSelect: (editor: DraftEditor, e: SyntheticKeyboardEvent<>) => {
+    editOnSelect(editor, e, true);
+  },
 
   /**
    * In Safari, keydown events may fire when committing compositions. If
@@ -208,7 +210,7 @@ const DraftEditorCompositionHandler = {
         contentState,
         replacementRange,
         composedChars,
-        currentStyle,
+        editorState.getInlineStyleOverride() || currentStyle,
         entityKey,
       );
 

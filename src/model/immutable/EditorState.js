@@ -274,8 +274,9 @@ class EditorState {
   static acceptSelection(
     editorState: EditorState,
     selection: SelectionState,
+    keepInlineStyleOverride: boolean,
   ): EditorState {
-    return updateSelection(editorState, selection, false);
+    return updateSelection(editorState, selection, false, keepInlineStyleOverride);
   }
 
   /**
@@ -293,11 +294,17 @@ class EditorState {
   static forceSelection(
     editorState: EditorState,
     selection: SelectionState,
+    keepInlineStyleOverride: boolean
   ): EditorState {
     if (!selection.getHasFocus()) {
       selection = selection.set('hasFocus', true);
     }
-    return updateSelection(editorState, selection, true);
+    return updateSelection(
+      editorState,
+      selection,
+      true,
+      keepInlineStyleOverride,
+    );
   }
 
   /**
@@ -506,12 +513,15 @@ function updateSelection(
   editorState: EditorState,
   selection: SelectionState,
   forceSelection: boolean,
+  keepInlineStyleOverride: boolean
 ): EditorState {
   return EditorState.set(editorState, {
     selection,
     forceSelection,
     nativelyRenderedContent: null,
-    inlineStyleOverride: null,
+    inlineStyleOverride: keepInlineStyleOverride
+      ? editorState.getInlineStyleOverride()
+      : null,
   });
 }
 
