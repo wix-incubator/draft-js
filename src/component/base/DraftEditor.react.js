@@ -299,7 +299,12 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     return (
       !!this.props.placeholder &&
       !this.props.editorState.isInCompositionMode() &&
-      !this.props.editorState.getCurrentContent().hasText()
+      !this.props.editorState.getCurrentContent().hasText() &&
+      this.props.editorState
+        .getCurrentContent()
+        .getBlockMap()
+        .first()
+        .getType() === 'unstyled'
     );
   }
 
