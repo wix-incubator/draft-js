@@ -18,8 +18,6 @@ const DraftModifier = require('DraftModifier');
 const DraftOffsetKey = require('DraftOffsetKey');
 const EditorState = require('EditorState');
 const UserAgent = require('UserAgent');
-const getScrollPosition = require('getScrollPosition');
-const Style = require('Style');
 
 const {notEmptyKey} = require('draftKeyUtils');
 const findAncestorOffsetKey = require('findAncestorOffsetKey');
@@ -159,9 +157,7 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
       lastUncollapsedSelection,
     );
     if (newEditorState !== editorState) {
-      const scrollParent = Style.getScrollParent(editor.editor);
-      const scrollPosition = getScrollPosition(scrollParent);
-      editor.restoreEditorDOM(scrollPosition);
+      editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY});
       editor.update(newEditorState);
     }
     return;
