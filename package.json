@@ -1,7 +1,7 @@
 {
   "name": "@wix/draft-js",
   "description": "A React framework for building text editors.",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "keywords": [
     "draftjs",
     "editor",
