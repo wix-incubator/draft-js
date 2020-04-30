@@ -12,6 +12,7 @@
 'use strict';
 
 import type DraftEditor from 'DraftEditor.react';
+import type {BlockNodeRecord} from 'BlockNodeRecord';
 import type SelectionState from 'SelectionState';
 
 const DraftModifier = require('DraftModifier');
@@ -21,7 +22,7 @@ const UserAgent = require('UserAgent');
 
 const {notEmptyKey} = require('draftKeyUtils');
 const findAncestorOffsetKey = require('findAncestorOffsetKey');
-const keyCommandPlainBackspace = require('keyCommandPlainBackspace');
+const deleteContentBackward = require('deleteContentBackward');
 const nullthrows = require('nullthrows');
 
 const isGecko = UserAgent.isEngine('Gecko');
@@ -30,17 +31,25 @@ const DOUBLE_NEWLINE = '\n\n';
 
 function onInputType(
   inputType: string,
+  domText: string,
+  modelText: string,
+  block: BlockNodeRecord,
   editorState: EditorState,
   lastUncollapsedSelectionState: ?SelectionState,
-): EditorState {
+) {
+  const DOMisUpToDate = domText === modelText;
+  let newEditorState = editorState;
   switch (inputType) {
     case 'deleteContentBackward':
-      return keyCommandPlainBackspace(
+      newEditorState = deleteContentBackward(
+        domText,
+        modelText,
+        block,
         editorState,
         lastUncollapsedSelectionState,
       );
   }
-  return editorState;
+  return {DOMisUpToDate, newEditorState};
 }
 
 /**
@@ -129,37 +138,30 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
   }
 
   const lastUncollapsedSelection = editor.getLastUncollapsedSelection();
-  const isMultiBlockSelection =
-    lastUncollapsedSelection &&
-    lastUncollapsedSelection.getAnchorKey() !==
-      lastUncollapsedSelection.getFocusKey();
+
+  // Some Android keyboards because don't fire standard onkeydown/pressed
+  // events and only fired editOnInput  so domText is already changed by
+  // the browser and ends up being equal to modelText unexpectedly.
+  // Newest versions of Android support the dom-inputevent-inputtype
+  // and we can use the `inputType` to properly apply the state changes.
 
   /* $FlowFixMe inputType is only defined on a draft of a standard.
    * https://w3c.github.io/input-events/#dom-inputevent-inputtype */
   const {inputType} = e.nativeEvent;
-  const handleBlockMerge =
-    inputType === 'deleteContentBackward' &&
-    (selection.getAnchorOffset() === 0 || isMultiBlockSelection);
-
-  if (
-    domText === modelText || // No change -- the DOM is up to date. Nothing to do here.
-    handleBlockMerge // Backspace -- two blocks are merging.
-  ) {
-    // This can be buggy for some Android keyboards because they don't fire
-    // standard onkeydown/pressed events and only fired editOnInput
-    // so domText is already changed by the browser and ends up being equal
-    // to modelText unexpectedly.
-    // Newest versions of Android support the dom-inputevent-inputtype
-    // and we can use the `inputType` to properly apply the state changes.
-    const newEditorState = onInputType(
-      inputType,
-      editorState,
-      lastUncollapsedSelection,
-    );
-    if (newEditorState !== editorState) {
-      editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY});
-      editor.update(newEditorState);
-    }
+  const {DOMisUpToDate, newEditorState} = onInputType(
+    inputType,
+    domText,
+    modelText,
+    block,
+    editorState,
+    lastUncollapsedSelection,
+  );
+  if (newEditorState !== editorState) {
+    editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY});
+    editor.update(newEditorState);
+    return;
+  }
+  if (DOMisUpToDate) {
     return;
   }
 
