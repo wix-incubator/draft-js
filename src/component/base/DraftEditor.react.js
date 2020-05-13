@@ -42,7 +42,7 @@ const invariant = require('invariant');
 const isHTMLElement = require('isHTMLElement');
 const nullthrows = require('nullthrows');
 const setImmediate = require('setImmediate');
-const {Map} = require('immutable');
+const {List, Map} = require('immutable');
 
 const isIE = UserAgent.isBrowser('IE');
 
@@ -164,6 +164,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   _lastUncollapsedSelectionState: ?SelectionState;
   _pendingStateFromBeforeInput: void | EditorState;
   _alteredBlockComponentKeys: Map<string, ?string>;
+  _decoratorTriggers: List<string>;
 
   /**
    * Define proxies that can route events to the current handler.
@@ -218,6 +219,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
     this._latestCommittedEditorState = props.editorState;
     this._lastUncollapsedSelectionState = null;
     this._alteredBlockComponentKeys = Map();
+    this._decoratorTriggers = this._getDecoratorTriggers(props.plugins || []);
 
     this._onBeforeInput = this._buildHandler('onBeforeInput');
     this._onBlur = this._buildHandler('onBlur');
@@ -329,6 +331,16 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
       return <DraftEditorPlaceholder {...placeHolderProps} />;
     }
     return null;
+  }
+
+  _getDecoratorTriggers(plugins: Array<Object>): List<string> {
+    const decoratorTriggers = [];
+    for (const plugin of plugins) {
+      if (plugin.decoratorTrigger) {
+        decoratorTriggers.push(plugin.decoratorTrigger);
+      }
+    }
+    return List(decoratorTriggers);
   }
 
   render(): React.Node {
