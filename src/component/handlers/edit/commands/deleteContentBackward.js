@@ -6,9 +6,6 @@ import type SelectionState from 'SelectionState';
 const EditorState = require('EditorState');
 const keyCommandPlainBackspace = require('keyCommandPlainBackspace');
 
-//TODO: get list of triggers from activated plugins
-const DECORATOR_CHARS = ['@', '#'];
-
 function getTextDiff(textA: string, textB: string): string {
   return textA.split(textB).join('');
 }
@@ -30,17 +27,22 @@ function isDecoratorDeletion(
   block: BlockNodeRecord,
   domText: string,
   modelText: string,
+  decoratorTriggers: List<String>,
 ): boolean {
-  const eventTextDiff = getTextDiff(domText, modelText); // source of truth when deleting WITHOUT selection
+  if (decoratorTriggers.isEmpty()) {
+    return false;
+  }
+
+  const eventTextDiff = getTextDiff(modelText, domText); // source of truth when deleting WITHOUT selection
   const stateTextDiff = getTextDiff(block.getText(), modelText); // source of truth when deleting WITH selection
-  const hasEventTextDiff = DECORATOR_CHARS.some(
+  const hasEventTextDiff = decoratorTriggers.some(
     trigger => eventTextDiff === trigger,
   );
   if (hasEventTextDiff) {
     return true;
   }
 
-  const hasStateTextDiff = DECORATOR_CHARS.some(
+  const hasStateTextDiff = decoratorTriggers.some(
     trigger => stateTextDiff.indexOf(trigger) > -1,
   );
   return hasStateTextDiff;
@@ -52,11 +54,12 @@ function deleteContentBackward(
   block: BlockNodeRecord,
   editorState: EditorState,
   lastUncollapsedSelectionState: ?SelectionState,
+  decoratorTriggers: List<String>,
 ): ?EditorState {
   if (
     domText === modelText || // No change -- the DOM is up to date. Nothing to do here.
     isBlockMerge(editorState.getSelection(), lastUncollapsedSelectionState) || //Backspace -- two blocks are merging.
-    isDecoratorDeletion(block, domText, modelText) // Backspace -- removing decorator.
+    isDecoratorDeletion(block, domText, modelText, decoratorTriggers) // Backspace -- removing decorator.
   ) {
     return keyCommandPlainBackspace(editorState, lastUncollapsedSelectionState);
   }

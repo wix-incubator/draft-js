@@ -14,6 +14,7 @@
 import type DraftEditor from 'DraftEditor.react';
 import type {BlockNodeRecord} from 'BlockNodeRecord';
 import type SelectionState from 'SelectionState';
+import type {List} from 'immutable';
 
 const DraftModifier = require('DraftModifier');
 const DraftOffsetKey = require('DraftOffsetKey');
@@ -36,6 +37,7 @@ function onInputType(
   block: BlockNodeRecord,
   editorState: EditorState,
   lastUncollapsedSelectionState: ?SelectionState,
+  decoratorTriggers: List<String>,
 ) {
   const DOMisUpToDate = domText === modelText;
   let newEditorState = editorState;
@@ -47,6 +49,7 @@ function onInputType(
         block,
         editorState,
         lastUncollapsedSelectionState,
+        decoratorTriggers,
       );
   }
   return {DOMisUpToDate, newEditorState};
@@ -155,6 +158,7 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     block,
     editorState,
     lastUncollapsedSelection,
+    editor._decoratorTriggers,
   );
   if (newEditorState !== editorState) {
     editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY});
