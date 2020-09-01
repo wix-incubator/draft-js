@@ -150,7 +150,7 @@ function setDraftEditorSelection(
   // If the selection is entirely bound within this node, set the selection
   // and be done.
   if (hasAnchor && hasFocus) {
-    selection.removeAllRanges();
+    // selection.removeAllRanges(); //chrome 85 bug - keyboard disappears when removeAllRanges is called
     addPointToSelection(
       selection,
       node,
@@ -318,7 +318,7 @@ function addPointToSelection(
   offset: number,
   selectionState: SelectionState,
 ): void {
-  const range = getCorrectDocumentFromNode(node).createRange();
+  // const range = getCorrectDocumentFromNode(node).createRange();
   // logging to catch bug that is being reported in t16250795
   if (offset > getNodeLength(node)) {
     // in this case we know that the call to 'range.setStart' is about to throw
@@ -329,8 +329,9 @@ function addPointToSelection(
     });
     DraftEffects.handleExtensionCausedError();
   }
-  range.setStart(node, offset);
-  selection.addRange(range);
+  // range.setStart(node, offset);
+  // selection.addRange(range);
+  selection.collapse(node, offset);
 }
 
 module.exports = setDraftEditorSelection;
