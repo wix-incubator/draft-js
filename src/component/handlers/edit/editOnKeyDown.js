@@ -113,7 +113,7 @@ function editOnKeyDown(
       if (isAndroid) {
         // Gboard keybord is sending backspace onInput event after spliting a word
         editor._blockInputEvents = true;
-        setTimeout(() => editor._blockInputEvents = false, 0);
+        setTimeout(() => (editor._blockInputEvents = false), 0);
       }
       // The top-level component may manually handle newline insertion. If
       // no special handling is performed, fall through to command handling.

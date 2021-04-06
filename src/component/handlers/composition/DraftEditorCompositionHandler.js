@@ -79,7 +79,10 @@ const DraftEditorCompositionHandler = {
    * twice could break the DOM, we only use the first event. Example: Arabic
    * Google Input Tools on Windows 8.1 fires `compositionend` three times.
    */
-  onCompositionEnd: function(editor: DraftEditor, e: SyntheticKeyboardEvent<>): void {
+  onCompositionEnd: function(
+    editor: DraftEditor,
+    e: SyntheticInputEvent<>,
+  ): void {
     resolved = false;
     stillComposing = false;
 
@@ -107,7 +110,9 @@ const DraftEditorCompositionHandler = {
    * Gboard keyboard don't send valid keyDown event
    * for backspace button only when merging blocks
    */
-  onInput: function (editor: DraftEditor, e: SyntheticKeyboardEvent<>): void {
+  onInput: function(editor: DraftEditor, e: SyntheticInputEvent<>): void {
+    /* $FlowFixMe inputType is only defined on a draft of a standard.
+     * https://w3c.github.io/input-events/#dom-inputevent-inputtype */
     if (e.nativeEvent.inputType === 'deleteContentBackward') {
       editOnInput(editor, e);
     }
@@ -133,7 +138,10 @@ const DraftEditorCompositionHandler = {
       // composition and reinterpret the key press in edit mode.
       DraftEditorCompositionHandler.resolveComposition(editor);
       editor._onKeyDown(e);
-      setTimeout(() => editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY}), 0);
+      setTimeout(
+        () => editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY}),
+        0,
+      );
       return;
     }
     if (e.which === Keys.RIGHT || e.which === Keys.LEFT) {

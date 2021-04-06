@@ -153,6 +153,7 @@ class DraftEditor extends React.Component<DraftEditorProps, State> {
   };
 
   _blockSelectEvents: boolean;
+  _blockInputEvents: boolean;
   _clipboard: ?BlockMap;
   _handler: ?Object;
   _dragCount: number;
