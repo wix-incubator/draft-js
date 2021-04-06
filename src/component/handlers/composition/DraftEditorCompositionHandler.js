@@ -138,9 +138,10 @@ const DraftEditorCompositionHandler = {
       // composition and reinterpret the key press in edit mode.
       DraftEditorCompositionHandler.resolveComposition(editor);
       editor._onKeyDown(e);
-      setTimeout(
-        () => editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY}),
-        0,
+      editor.update(
+        EditorState.set(editor._latestEditorState, {
+          nativelyRenderedContent: editor._latestEditorState.getCurrentContent(),
+        }),
       );
       return;
     }
