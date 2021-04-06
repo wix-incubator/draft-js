@@ -92,7 +92,7 @@ function editOnInput(editor: DraftEditor, e: SyntheticInputEvent<>): void {
     anchorNode.nodeType !== Node.TEXT_NODE &&
     anchorNode.nodeType !== Node.ELEMENT_NODE;
 
-  if (isNotTextOrElementNode) {
+  if (isNotTextOrElementNode || editor._blockInputEvents) {
     // TODO: (t16149272) figure out context for this change
     return;
   }

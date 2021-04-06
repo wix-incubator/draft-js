@@ -28,9 +28,9 @@ const onKeyDown = require('editOnKeyDown');
 const onPaste = require('editOnPaste');
 const onSelect = require('editOnSelect');
 
-const isChrome = UserAgent.isBrowser('Chrome');
+const isAndroid = UserAgent.isPlatform('Android');
 
-const selectionHandler: (e: DraftEditor) => void = isChrome
+const selectionHandler: (e: DraftEditor) => void = isAndroid
   ? onSelect
   : e => {};
 
@@ -47,7 +47,7 @@ const DraftEditorEditHandler = {
   onKeyDown,
   onPaste,
   onSelect,
-  // In certain cases, contenteditable on chrome does not fire the onSelect
+  // In certain cases, contenteditable on android does not fire the onSelect
   // event, causing problems with cursor positioning. Therefore, the selection
   // state update handler is added to more events to ensure that the selection
   // state is always synced with the actual cursor positions.

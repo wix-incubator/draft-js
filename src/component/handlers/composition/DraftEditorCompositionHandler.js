@@ -20,9 +20,11 @@ const EditorState = require('EditorState');
 const Keys = require('Keys');
 
 const editOnSelect = require('editOnSelect');
+const editOnInput = require('editOnInput');
 const getContentEditableContainer = require('getContentEditableContainer');
 const getEntityKeyForSelection = require('getEntityKeyForSelection');
 const nullthrows = require('nullthrows');
+const keyCommandInsertNewline = require('keyCommandInsertNewline');
 
 /**
  * Millisecond delay to allow `compositionstart` to fire again upon
@@ -77,9 +79,21 @@ const DraftEditorCompositionHandler = {
    * twice could break the DOM, we only use the first event. Example: Arabic
    * Google Input Tools on Windows 8.1 fires `compositionend` three times.
    */
-  onCompositionEnd: function(editor: DraftEditor): void {
+  onCompositionEnd: function(editor: DraftEditor, e: SyntheticKeyboardEvent<>): void {
     resolved = false;
     stillComposing = false;
+
+    if (e.data.endsWith('\n')) {
+      // Gboard keyboard adds new line symbol to composition event
+      // and don't send valid keyDown event when clicking enter
+      // at the end of a word.
+      DraftEditorCompositionHandler.resolveComposition(editor);
+      const newState = keyCommandInsertNewline(editor._latestEditorState);
+      editor.update(newState);
+      editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY});
+      return;
+    }
+
     setTimeout(() => {
       if (!resolved) {
         DraftEditorCompositionHandler.resolveComposition(editor);
@@ -90,11 +104,28 @@ const DraftEditorCompositionHandler = {
   onSelect: editOnSelect,
 
   /**
+   * Gboard keyboard don't send valid keyDown event
+   * for backspace button only when merging blocks
+   */
+  onInput: function (editor: DraftEditor, e: SyntheticKeyboardEvent<>): void {
+    if (e.nativeEvent.inputType === 'deleteContentBackward') {
+      editOnInput(editor, e);
+    }
+  },
+
+  /**
    * In Safari, keydown events may fire when committing compositions. If
    * the arrow keys are used to commit, prevent default so that the cursor
    * doesn't move, otherwise it will jump back noticeably on re-render.
    */
   onKeyDown: function(editor: DraftEditor, e: SyntheticKeyboardEvent<>): void {
+    if (e.which === 229) {
+      // 229 is a special value set for a keyCode relating to an event that has been processed by an IME
+      // Gboard keyboard is sending it on every button press
+      // https://developer.mozilla.org/en-US/docs/Web/API/Element/keydown_event
+      return;
+    }
+
     if (!stillComposing) {
       // If a keydown event is received after compositionend but before the
       // 20ms timer expires (ex: type option-E then backspace, or type A then
@@ -102,6 +133,7 @@ const DraftEditorCompositionHandler = {
       // composition and reinterpret the key press in edit mode.
       DraftEditorCompositionHandler.resolveComposition(editor);
       editor._onKeyDown(e);
+      setTimeout(() => editor.restoreEditorDOM({x: window.scrollX, y: window.scrollY}), 0);
       return;
     }
     if (e.which === Keys.RIGHT || e.which === Keys.LEFT) {

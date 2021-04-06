@@ -35,6 +35,7 @@ const keyCommandUndo = require('keyCommandUndo');
 
 const {isOptionKeyCommand} = KeyBindingUtil;
 const isChrome = UserAgent.isBrowser('Chrome');
+const isAndroid = UserAgent.isPlatform('Android');
 
 /**
  * Map a `DraftEditorCommand` command value to a corresponding function.
@@ -109,6 +110,11 @@ function editOnKeyDown(
   switch (keyCode) {
     case Keys.RETURN:
       e.preventDefault();
+      if (isAndroid) {
+        // Gboard keybord is sending backspace onInput event after spliting a word
+        editor._blockInputEvents = true;
+        setTimeout(() => editor._blockInputEvents = false, 0);
+      }
       // The top-level component may manually handle newline insertion. If
       // no special handling is performed, fall through to command handling.
       if (
