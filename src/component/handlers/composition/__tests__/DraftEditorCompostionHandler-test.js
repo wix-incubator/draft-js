@@ -25,6 +25,7 @@ const SelectionState = require('SelectionState');
 const convertFromHTMLToContentBlocks = require('convertFromHTMLToContentBlocks');
 const editOnCompositionStart = require('editOnCompositionStart');
 const {Map} = require('immutable');
+const compositionEvent = {data: ''};
 
 jest.mock('DOMObserver', () => {
   function DOMObserver() {}
@@ -112,7 +113,7 @@ test('isInCompositionMode is properly updated on composition events', () => {
   expect(editor.setMode).toHaveBeenLastCalledWith('composite');
   expect(editor._latestEditorState.isInCompositionMode()).toBe(true);
   // $FlowExpectedError
-  compositionHandler.onCompositionEnd(editor);
+  compositionHandler.onCompositionEnd(editor, compositionEvent);
   jest.runAllTimers();
   expect(editor._latestEditorState.isInCompositionMode()).toBe(false);
   expect(editor.exitCurrentMode).toHaveBeenCalled();
@@ -128,7 +129,7 @@ test('Can handle a single mutation', () => {
     // $FlowExpectedError
     compositionHandler.onCompositionStart(editor);
     // $FlowExpectedError
-    compositionHandler.onCompositionEnd(editor);
+    compositionHandler.onCompositionEnd(editor, compositionEvent);
     jest.runAllTimers();
 
     expect(editorTextContent()).toBe('\u79c1');
@@ -151,7 +152,7 @@ test('Can handle mutations in multiple blocks', () => {
     // $FlowExpectedError
     compositionHandler.onCompositionStart(editor);
     // $FlowExpectedError
-    compositionHandler.onCompositionEnd(editor);
+    compositionHandler.onCompositionEnd(editor, compositionEvent);
     jest.runAllTimers();
 
     expect(editorTextContent()).toBe('reactjs\ndraftjs');
@@ -179,7 +180,7 @@ test('Can handle mutations in the same block in multiple leaf nodes', () => {
     // $FlowExpectedError
     compositionHandler.onCompositionStart(editor);
     // $FlowExpectedError
-    compositionHandler.onCompositionEnd(editor);
+    compositionHandler.onCompositionEnd(editor, compositionEvent);
     jest.runAllTimers();
 
     expect(editorTextContent()).toBe('reacta draftbb graphqlccc');

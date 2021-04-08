@@ -29,10 +29,10 @@ const onPaste = require('editOnPaste');
 const onSelect = require('editOnSelect');
 
 const isChrome = UserAgent.isBrowser('Chrome');
+const isAndroid = UserAgent.isPlatform('Android');
 
-const selectionHandler: (e: DraftEditor) => void = isChrome
-  ? onSelect
-  : e => {};
+const selectionHandler: (e: DraftEditor) => void =
+  isChrome || isAndroid ? onSelect : e => {};
 
 const DraftEditorEditHandler = {
   onBeforeInput,
